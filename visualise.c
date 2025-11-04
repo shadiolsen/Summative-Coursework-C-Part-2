@@ -40,30 +40,9 @@ int convertStringToLongLong(const char *start, long long min, long long max, lon
     return 1;
 }
 
-void charToBinaryHelper(unsigned char value){
-    for (int i = 7; i >= 0 ; i--) { //Backwards for loop MSB to LSB for shifting
-        int currentBit = (value >> i) & 1; 
-        printf("%d", currentBit); //Print out each bit in order
-        if (i % 4 == 0 && i != 0) { //0 % 4 = 0, so include i != 0 so there's no extra space
-            printf(" "); //Outputs space for each nibble
-        }
-    }
-    printf("\n");
-}
-
-void intToBinaryHelper(int value){
-    for (int i = 31; i >= 0 ; i--) { //Backwards for loop MSB to LSB for shifting
-        int currentBit = (value >> i) & 1; 
-        printf("%d", currentBit); //Print out each bit in order
-        if (i % 4 == 0 && i != 0) { //0 % 4 = 0, so include i != 0 so there's no extra space
-            printf(" "); //Outputs space for each nibble
-        }
-    }
-    printf("\n");
-}
-
-void longlongToBinaryHelper(long long value){
-    for (int i = 63; i >= 0 ; i--) { //Backwards for loop MSB to LSB for shifting
+//DRY code, defined with the unsigned long long so each data type can be converted
+void printBinaryBits(unsigned long long value, int bits){
+    for (int i= (bits - 1); i >= 0 ; i--) { //Backwards for loop MSB to LSB for shifting
         int currentBit = (value >> i) & 1; 
         printf("%d", currentBit); //Print out each bit in order
         if (i % 4 == 0 && i != 0) { //0 % 4 = 0, so include i != 0 so there's no extra space
@@ -77,26 +56,29 @@ void longlongToBinaryHelper(long long value){
     Binary Conversion Function
 ===================================================*/
 
-void charToBinary(){}
-
 void unsignedCharToBinary(unsigned char value){
     //range 0 to 255
-    charToBinaryHelper(value); //Use helper function for DRY code
+    printBinaryBits(value, 8); //Use helper function for DRY code
 }
 
 void signedCharToBinary(signed char value){
     //range -128 to +127
-    charToBinaryHelper((unsigned char)value); //Use casting to prevent sign extension
+    printBinaryBits((unsigned char)value, 8); //Use casting to prevent sign extension
 }
 
 void intToBinary(int value){
     // range -2bil to +2bil
-    intToBinaryHelper(value);
+    printBinaryBits(value, 32);
+}
+
+void unsignedIntToBinary(unsigned int value){
+    // range -2bil to +2bil
+    printBinaryBits(value, 32);
 }
 
 void longlongToBinary(long long value){
     // range -2^63 to 2^63-1
-    longlongToBinaryHelper(value);
+    printBinaryBits(value, 64);
 }
 
 void floatToBinary(){}
@@ -173,7 +155,7 @@ int main(int argc, char *argv[]){ //Take in type and data
         if (!convertStringToInt(data, 0, 255, &numericData)) {
         printf("Input error.\n");
         return 0;} // numericData now contains the valid number
-        
+
         unsignedCharToBinary(numericData);
 
     } else if (strcmp(type, "signed char") == 0 || strcmp(type, "char") == 0 ) { //assuming we're using clang and gcc, char == signed char
@@ -183,17 +165,25 @@ int main(int argc, char *argv[]){ //Take in type and data
         
         signedCharToBinary(numericData);
 
-    } else if (strcmp(type, "int") == 0 || strcmp(type, "long") == 0) { //As we are on Linux int == long
+    } else if (strcmp(type, "int") == 0) { 
         if (!convertStringToInt(data, (INT_MIN), (INT_MAX), &numericData)) {
         printf("Input error.\n");
         return 0;} 
 
         intToBinary(numericData);
+
+    } else if (strcmp(type, "unsigned int") == 0) { 
+        if (!convertStringToInt(data, (0), (UINT_MAX), &numericData)) {
+        printf("Input error.\n");
+        return 0;} 
+
+        unsignedIntToBinary(numericData);
     
-    } else if (strcmp(type, "long long") == 0 || strcmp(type, "signed long long") == 0) { //64 bits
+    } else if (strcmp(type, "long") == 0 || strcmp(type, "long long") == 0 || strcmp(type, "signed long long") == 0) { //As we are on Linux long == long long
         if (!convertStringToLongLong(data, (LLONG_MIN), (LLONG_MAX), &longNumericData)) {
         printf("Input error.\n");
         return 0;} // longNumericData now contains the valid number
+
         longlongToBinary(longNumericData); 
 
     } else if (strcmp(type, "float") == 0) { //32 bits
